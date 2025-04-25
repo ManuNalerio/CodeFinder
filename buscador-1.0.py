@@ -27,6 +27,7 @@ for root, dirs, files in os.walk(carpeta_busqueda):
                     try:
                         df = excel.parse(hoja)
                         for codigo in codigos:
+                            #Busca el codigo por coincidencia exacta
                             if df.astype(str).apply(lambda x: x.str.strip() == codigo).any().any():
                                 resultados.append((codigo, archivo, hoja, ruta_archivo))
                     except Exception as e:
