@@ -1,7 +1,8 @@
+#Librerias instaladas
 import os
 import pandas as pd
 
-# Ruta donde buscar (ajústala a tu carpeta de Dropbox)
+# Ruta donde buscar (ajustar ruta dependiendo donde se encuentren los archivos)
 carpeta_busqueda = r'C:\Users\PC-DEPO\Dropbox\ADMINISTRACION\CONTROL\PENDIENTES'
 
 # Pedir códigos de productos al usuario
@@ -10,13 +11,13 @@ codigos_buscar = input("Introduce los códigos de productos separados por comas:
 print('******************')
 codigos = [c.strip() for c in codigos_buscar.split(",")]
 
-# Extensiones válidas
+# Extensiones válidas de los archivos para analizar 
 extensiones_excel = ['.xlsx', '.xls']
 
 # Lista de resultados
 resultados = []
 
-# Recorrer todas las carpetas y subcarpetas
+# Recorrer todas las carpetas y subcarpetas donde tenemos guardados los archivos de excel
 for root, dirs, files in os.walk(carpeta_busqueda):
     for archivo in files:
         if any(archivo.endswith(ext) for ext in extensiones_excel):
@@ -27,7 +28,7 @@ for root, dirs, files in os.walk(carpeta_busqueda):
                     try:
                         df = excel.parse(hoja)
                         for codigo in codigos:
-                            #Busca el codigo por coincidencia exacta
+                            #Busca el codigo por coincidencia exacta para evitar falso positivo
                             if df.astype(str).apply(lambda x: x.str.strip() == codigo).any().any():
                                 resultados.append((codigo, archivo, hoja, ruta_archivo))
                     except Exception as e:
@@ -35,7 +36,7 @@ for root, dirs, files in os.walk(carpeta_busqueda):
             except Exception as e:
                 print(f"⚠️ No se pudo abrir el archivo '{archivo}': {e}")
 
-# Mostrar resultados ya sea positivo o negativo
+# Mostrar resultados ya sea positivo o negativo y nos muestra nombre de archivo, hoja del excel y el path
 if resultados:
     print("\n🔎 Resultados encontrados:")
     for codigo, archivo, hoja, ruta in resultados:
