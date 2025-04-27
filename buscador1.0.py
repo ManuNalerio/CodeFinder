@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Ruta base donde están todos los proveedores
-dropbox_base = r'C:\Users\PC-DEPO\Dropbox\ADMINISTRACION\CONTROL\PENDIENTES'
+dropbox_base = r'Ruta donde se encuentran los proveedores'
 
 # Extensiones válidas
 extensiones_excel = ['.xlsx', '.xls']
