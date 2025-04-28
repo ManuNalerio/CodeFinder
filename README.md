@@ -22,14 +22,14 @@ Aunque es un proyecto simple, tiene potencial para seguir evolucionando.
 
 ---
 
-#⚙️ Requisitos del sistema
+# ⚙️ Requisitos del sistema
 Para utilizar CodeFinder, asegurate de cumplir con los siguientes requisitos:
 
 1. Entorno de ejecución
 Python: Versión 3.8 o superior.
 ➔ Podés descargarlo desde el sitio oficial: python.org.
 
-💡 Recomendación: Utilizar un entorno virtual (virtualenv o venv) para gestionar las dependencias del proyecto de manera aislada.
+#💡 Recomendación: Utilizar un entorno virtual (virtualenv o venv) para gestionar las dependencias del proyecto de manera aislada.
 
 2. Librerías necesarias
 Pandas: Librería fundamental para la manipulación y análisis de datos en Python, utilizada para leer y procesar archivos Excel.
@@ -44,11 +44,13 @@ O, si trabajás dentro de un entorno virtual:
 pip -m install pandas
 ```
 
+---
 
 ✨ Contribuciones
 Este proyecto está abierto a mejoras.
 ¡Toda sugerencia o pull request será bienvenida para seguir haciendo crecer CodeFinder!
 
+---
 
 Espero que este mini proyecto, por más sencillo que sea, pueda ayudar a alguien en algún momento de la vida.  
 ¡Con eso ya me siento más que realizado! 😄
