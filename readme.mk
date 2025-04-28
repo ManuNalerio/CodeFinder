@@ -44,9 +44,11 @@ O, si trabajás dentro de un entorno virtual:
 pip -m install pandas
 ```
 
+
 ✨ Contribuciones
 Este proyecto está abierto a mejoras.
 ¡Toda sugerencia o pull request será bienvenida para seguir haciendo crecer CodeFinder!
+
 
 Espero que este mini proyecto, por más sencillo que sea, pueda ayudar a alguien en algún momento de la vida.  
 ¡Con eso ya me siento más que realizado! 😄
