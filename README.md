@@ -18,7 +18,7 @@ Aunque es un proyecto simple, tiene potencial para seguir evolucionando.
   - Nombre de la hoja donde aparece el código.
   - Ruta completa del archivo.
 - Bucle interactivo para realizar múltiples búsquedas en una sola sesión.
-- 🚧 Opción (en desarrollo) para abrir archivos directamente en Visual Studio Code.
+- 🚧 Interfaz grafica en desrrollo.
 
 ---
 
@@ -48,7 +48,7 @@ pip -m install pandas
 
 ✨ Contribuciones
 Este proyecto está abierto a mejoras.
-¡Toda sugerencia o pull request será bienvenida para seguir haciendo crecer CodeFinder!
+¡Toda sugerencia o pull request será bienvenido para seguir haciendo crecer CodeFinder!
 
 ---
 
