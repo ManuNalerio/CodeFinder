@@ -1,46 +1,71 @@
-import tkinter as tk
-from tkinter import messagebox
-import pandas as pd
-import os
+# codefinder_gui.py
 
-# Función simulada de búsqueda (después la vas a reemplazar por tu lógica real)
+import tkinter as tk
+from tkinter import messagebox, filedialog
+from codefinder_base import buscar_codigos_en_archivos  # Importa la función
+
+# Variable global para guardar la ruta seleccionada
+ruta_base = "C:\Users\PC-DEPO\Dropbox\ADMINISTRACION\CONTROL\PENDIENTES"
+
+def seleccionar_carpeta():
+    global ruta_base
+    carpeta_seleccionada = filedialog.askdirectory()
+    if carpeta_seleccionada:
+        ruta_base = carpeta_seleccionada
+        etiqueta_ruta.config(text=f"Carpeta seleccionada:\n{ruta_base}")
+    else:
+        messagebox.showinfo("Información", "No se seleccionó ninguna carpeta.")
+
 def buscar_codigos():
+    global ruta_base
+
+    if not ruta_base:
+        messagebox.showwarning("Advertencia", "Por favor seleccioná una carpeta primero.")
+        return
+
     codigos = entrada_codigos.get().split(",")
     codigos = [codigo.strip() for codigo in codigos if codigo.strip()]
 
     if not codigos:
-        messagebox.showwarning("Advertencia", "Por favor ingrese al menos un código.")
+        messagebox.showwarning("Advertencia", "Por favor ingresá al menos un código.")
         return
 
-    resultados.delete(0, tk.END)  # Limpia resultados anteriores
+    resultados.delete(0, tk.END)  # Limpiar resultados anteriores
 
-    # Acá va la lógica real. De momento, simulamos resultados
-    for codigo in codigos:
-        resultados.insert(tk.END, f"Código '{codigo}' encontrado en archivo_simulado.xlsx - Hoja1")
-        resultados.insert(tk.END, "Ruta: C:/ruta/ficticia/archivo_simulado.xlsx")
-        resultados.insert(tk.END, "----------------------------------------")
+    resultados_encontrados = buscar_codigos_en_archivos(ruta_base, codigos)
 
-# Crear ventana principal
-root = tk.Tk()
-root.title("CodeFinder")
-root.geometry("600x500")
-root.resizable(False, False)
+    if resultados_encontrados:
+        for resultado in resultados_encontrados:
+            resultados.insert(tk.END, f"Código '{resultado['codigo']}' encontrado en archivo {resultado['archivo']} - Hoja {resultado['hoja']}")
+            resultados.insert(tk.END, f"Ruta: {resultado['ruta']}")
+            resultados.insert(tk.END, "----------------------------------------")
+    else:
+        resultados.insert(tk.END, "No se encontraron códigos.")
 
-# Widgets
-label_codigos = tk.Label(root, text="Código/s a buscar:", font=("Arial", 12))
-label_codigos.pack(pady=10)
+# Crear la ventana principal
+ventana = tk.Tk()
+ventana.title("CodeFinder GUI")
+ventana.geometry("700x500")
 
-entrada_codigos = tk.Entry(root, width=60, font=("Arial", 11))
-entrada_codigos.pack(pady=5)
+# Botón para seleccionar carpeta
+boton_carpeta = tk.Button(ventana, text="Seleccionar Carpeta", command=seleccionar_carpeta)
+boton_carpeta.pack(pady=10)
 
-boton_buscar = tk.Button(root, text="Buscar", command=buscar_codigos, width=20, bg="#4CAF50", fg="white", font=("Arial", 11))
+# Etiqueta para mostrar la ruta
+etiqueta_ruta = tk.Label(ventana, text="No se seleccionó carpeta", wraplength=600, justify="center")
+etiqueta_ruta.pack(pady=5)
+
+# Entrada de códigos
+entrada_codigos = tk.Entry(ventana, width=80)
+entrada_codigos.pack(pady=10)
+
+# Botón para buscar
+boton_buscar = tk.Button(ventana, text="Buscar Códigos", command=buscar_codigos)
 boton_buscar.pack(pady=10)
 
-label_resultados = tk.Label(root, text="Resultados:", font=("Arial", 12))
-label_resultados.pack(pady=10)
+# Lista para mostrar resultados
+resultados = tk.Listbox(ventana, width=100, height=20)
+resultados.pack(pady=20)
 
-resultados = tk.Listbox(root, width=80, height=15, font=("Courier", 10))
-resultados.pack(pady=5)
-
-# Ejecutar aplicación
-root.mainloop()
+# Iniciar la ventana
+ventana.mainloop()
