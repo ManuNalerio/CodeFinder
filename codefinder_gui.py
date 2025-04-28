@@ -5,7 +5,7 @@ from tkinter import filedialog
 import pandas as pd
 
 # Ruta base donde están las carpetas de proveedores
-ruta_base = "C:\\Users\\PC-DEPO\\Dropbox\\ADMINISTRACION\\CONTROL\\PENDIENTES"
+ruta_base = "Tu ruta de acceso a la carpeta con archivos excel"
 
 # Crear ventana principal
 app = ttk.Window(themename="superhero")  # Dark mode con bordes suaves
