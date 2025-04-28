@@ -1,135 +1,121 @@
 import os
 import tkinter as tk
-from tkinter import ttk, messagebox
+import ttkbootstrap as ttk
+from tkinter import filedialog
 import pandas as pd
-import ttkbootstrap as ttkb
-import time
 
-# Ruta base de tus carpetas
-ruta_base = r"Tu ruta de acceso a la carpeta contenedora de archivos excel"
+# Ruta base donde están las carpetas de proveedores
+ruta_base = "C:\\Users\\PC-DEPO\\Dropbox\\ADMINISTRACION\\CONTROL\\PENDIENTES"
 
-# Inicializar ventana principal con tema oscuro
-app = ttkb.Window(themename="darkly")
-app.title("CodeFinder GUI")
+# Crear ventana principal
+app = ttk.Window(themename="superhero")  # Dark mode con bordes suaves
+app.title("CodeFinder - Buscador de Códigos")
 app.geometry("800x600")
 app.resizable(False, False)
 
-# Crear estilo
-style = ttkb.Style()
-
-# Variable para proveedor seleccionado
+# Variables
 proveedor_var = tk.StringVar()
+codigos_var = tk.StringVar()
 
-# Frame para seleccionar proveedor
-proveedor_frame = ttkb.Frame(app, padding=10)
-proveedor_frame.pack(fill="x")
-
-proveedor_label = ttkb.Label(proveedor_frame, text="Seleccionar proveedor:", font=("Segoe UI", 12))
-proveedor_label.pack(side="left")
-
-# Cargar lista de carpetas (proveedores)
-proveedores = [d for d in os.listdir(ruta_base) if os.path.isdir(os.path.join(ruta_base, d))]
-
-proveedor_dropdown = ttkb.Combobox(proveedor_frame, textvariable=proveedor_var, values=proveedores, width=50, font=("Segoe UI", 11))
-proveedor_dropdown.pack(side="left", padx=10)
-
-# Frame para ingresar códigos
-input_frame = ttkb.Frame(app, padding=10)
-input_frame.pack(fill="x")
-
-entry_label = ttkb.Label(input_frame, text="Ingresar códigos (separados por coma):", font=("Segoe UI", 12))
-entry_label.pack(anchor="w")
-
-entry = ttkb.Entry(input_frame, font=("Segoe UI", 11))
-entry.pack(fill="x", pady=5)
-
-# Frame para botones
-button_frame = ttkb.Frame(app, padding=10)
-button_frame.pack(fill="x")
-
-buscar_button = ttkb.Button(button_frame, text="Buscar Códigos", command=lambda: buscar_codigos())
-buscar_button.pack(side="left", padx=5)
-
-limpiar_button = ttkb.Button(button_frame, text="Limpiar resultados", command=lambda: limpiar_resultados())
-limpiar_button.pack(side="left", padx=5)
-
-cambiar_tema_button = ttkb.Button(button_frame, text="Cambiar Tema", command=lambda: cambiar_tema())
-cambiar_tema_button.pack(side="left", padx=5)
-
-# Barra de progreso
-progreso = ttkb.Progressbar(app, orient="horizontal", length=400, mode="determinate", bootstyle="success-striped")
-progreso.pack(pady=10)
-
-# Área de salida
-output_text = tk.Text(app, height=20, font=("Consolas", 10), wrap="word", borderwidth=2, relief="ridge")
-output_text.pack(padx=10, pady=10, fill="both", expand=True)
-
-# Funciones principales
+# Funciones
+def cargar_proveedores():
+    proveedores = []
+    for carpeta in os.listdir(ruta_base):
+        if os.path.isdir(os.path.join(ruta_base, carpeta)):
+            proveedores.append(carpeta)
+    return sorted(proveedores)
 
 def buscar_codigos():
     proveedor = proveedor_var.get()
-    codigos = entry.get().replace(" ", "").split(',')
+    codigos_buscar = codigos_var.get().split(",")
+    codigos_buscar = [codigo.strip() for codigo in codigos_buscar]
 
-    if not proveedor:
-        messagebox.showwarning("Advertencia", "Por favor seleccioná un proveedor.")
-        return
+    output_text.config(state="normal")
+    output_text.delete("1.0", tk.END)
 
-    if not codigos or codigos == ['']:
-        messagebox.showwarning("Advertencia", "Por favor ingresá al menos un código.")
-        return
+    total_encontrados = 0
 
-    carpeta_proveedor = os.path.join(ruta_base, proveedor)
+    for carpeta_proveedor in os.listdir(ruta_base):
+        if proveedor.lower() in carpeta_proveedor.lower():
+            carpeta_path = os.path.join(ruta_base, carpeta_proveedor)
 
-    if not os.path.exists(carpeta_proveedor):
-        messagebox.showerror("Error", f"No se encontró la carpeta del proveedor: {proveedor}")
-        return
+            for archivo in os.listdir(carpeta_path):
+                if archivo.endswith(".xlsx"):
+                    archivo_path = os.path.join(carpeta_path, archivo)
+                    try:
+                        xls = pd.ExcelFile(archivo_path)
+                        for hoja in xls.sheet_names:
+                            df = pd.read_excel(archivo_path, sheet_name=hoja, dtype=str)
+                            for codigo in codigos_buscar:
+                                if df.apply(lambda x: x.astype(str).str.contains(codigo, case=False).any(), axis=1).any():
+                                    total_encontrados += 1
+                                    output_text.insert(tk.END, f"\n✅ Código '{codigo}' encontrado en:\n", "bold")
+                                    output_text.insert(tk.END, f"📄 Archivo: {archivo}\n", "regular")
+                                    output_text.insert(tk.END, f"📄 Hoja: {hoja}\n", "regular")
+                                    output_text.insert(tk.END, f"📂 Ruta: {archivo_path}\n", "regular")
+                                    output_text.insert(tk.END, "-"*40 + "\n", "separator")
+                    except Exception as e:
+                        print(f"Error al procesar {archivo_path}: {e}")
 
-    archivos_excel = [f for f in os.listdir(carpeta_proveedor) if f.endswith((".xls", ".xlsx"))]
+    if total_encontrados == 0:
+        output_text.insert(tk.END, "\n🚫 No se encontraron coincidencias.\n", "no_results")
 
-    if not archivos_excel:
-        messagebox.showinfo("Información", "No hay archivos Excel para este proveedor.")
-        return
-
-    progreso["maximum"] = len(archivos_excel)
-    progreso["value"] = 0
-    output_text.delete('1.0', tk.END)
-
-    for idx, archivo in enumerate(archivos_excel):
-        ruta_archivo = os.path.join(carpeta_proveedor, archivo)
-        try:
-            xls = pd.ExcelFile(ruta_archivo)
-            for hoja in xls.sheet_names:
-                df = pd.read_excel(ruta_archivo, sheet_name=hoja)
-                for codigo in codigos:
-                    if df.astype(str).apply(lambda x: x.str.contains(codigo, na=False)).any().any():
-                        output_text.insert(tk.END, f"✅ Código '{codigo}' encontrado en:\n")
-                        output_text.insert(tk.END, f"   📄 Archivo: {archivo}\n")
-                        output_text.insert(tk.END, f"   📄 Hoja: {hoja}\n")
-                        output_text.insert(tk.END, f"   📂 Ruta: {ruta_archivo}\n\n")
-        except Exception as e:
-            output_text.insert(tk.END, f"⚠️ Error procesando {archivo}: {str(e)}\n\n")
-        progreso["value"] = idx + 1
-        app.update_idletasks()
-
-    messagebox.showinfo("Búsqueda finalizada", "La búsqueda de códigos finalizó.")
+    output_text.config(state="disabled")
 
 def limpiar_resultados():
-    output_text.delete('1.0', tk.END)
-    progreso["value"] = 0
-    entry.delete(0, tk.END)
-    proveedor_var.set('')
+    proveedor_var.set("")
+    codigos_var.set("")
+    output_text.config(state="normal")
+    output_text.delete("1.0", tk.END)
+    output_text.config(state="disabled")
 
 def cambiar_tema():
-    current_theme = style.theme.name
-    # Pequeño "efecto de transición"
-    app.configure(cursor="watch")
-    app.update()
-    time.sleep(0.2)
-    if current_theme == "darkly":
-        style.theme_use("flatly")   # Tema claro
+    tema_actual = app.style.theme.name
+    if tema_actual == "superhero":
+        app.style.theme_use("flatly")
     else:
-        style.theme_use("darkly")   # Tema oscuro
-    app.configure(cursor="")  # Volver al cursor normal
+        app.style.theme_use("superhero")
 
-# Ejecutar la aplicación
+# Widgets
+frame_input = ttk.Frame(app, padding=10)
+frame_input.pack(fill="x")
+
+label_proveedor = ttk.Label(frame_input, text="Proveedor:")
+label_proveedor.pack(side="left", padx=(0, 5))
+
+proveedores = cargar_proveedores()
+proveedor_dropdown = ttk.Combobox(frame_input, textvariable=proveedor_var, values=proveedores, width=40)
+proveedor_dropdown.pack(side="left", padx=(0, 15))
+
+label_codigos = ttk.Label(frame_input, text="Códigos (separados por coma):")
+label_codigos.pack(side="left", padx=(0, 5))
+
+entry_codigos = ttk.Entry(frame_input, textvariable=codigos_var, width=40)
+entry_codigos.pack(side="left", padx=(0, 5))
+
+frame_buttons = ttk.Frame(app, padding=10)
+frame_buttons.pack(fill="x")
+
+buscar_button = ttk.Button(frame_buttons, text="Buscar", command=buscar_codigos, bootstyle="success")
+buscar_button.pack(side="left", padx=(0, 10))
+
+limpiar_button = ttk.Button(frame_buttons, text="Limpiar Resultados", command=limpiar_resultados, bootstyle="danger")
+limpiar_button.pack(side="left", padx=(0, 10))
+
+tema_button = ttk.Button(frame_buttons, text="Cambiar Tema", command=cambiar_tema, bootstyle="info")
+tema_button.pack(side="left", padx=(0, 10))
+
+frame_output = ttk.Frame(app, padding=10)
+frame_output.pack(fill="both", expand=True)
+
+output_text = tk.Text(frame_output, wrap="word", state="disabled", bg="#2b2b2b", fg="white", insertbackground="white", relief="flat")
+output_text.pack(fill="both", expand=True)
+
+# Configuración de estilos para el output
+output_text.tag_configure("bold", foreground="#00ff99", font=("Helvetica", 11, "bold"))
+output_text.tag_configure("regular", foreground="#cccccc", font=("Helvetica", 10))
+output_text.tag_configure("separator", foreground="#666666", font=("Helvetica", 8))
+output_text.tag_configure("no_results", foreground="#ff5555", font=("Helvetica", 11, "bold"))
+
+# Ejecutar aplicación
 app.mainloop()
