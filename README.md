@@ -18,7 +18,7 @@ Aunque es un proyecto simple, tiene potencial para seguir evolucionando.
   - Nombre de la hoja donde aparece el código.
   - Ruta completa del archivo.
 - Bucle interactivo para realizar múltiples búsquedas en una sola sesión.
-- 🚧 Interfaz grafica en desrrollo.
+- 🚧 Interfaz gráfica en desarrollo.
 
 ---
 
@@ -33,23 +33,30 @@ Para utilizar **CodeFinder**, asegurate de contar con los siguientes requisitos:
 
 > 💡 *Recomendación:* Usar un entorno virtual (`virtualenv` o `venv`) para gestionar las dependencias del proyecto de manera aislada.
 
+### 2. Instalación de dependencias
+
+Este proyecto utiliza la librería **pandas** para la manipulación y análisis de datos en archivos Excel.
+
+Podés instalarla ejecutando:
+
 ```bash
 pip install pandas
 ```
 
-O, si trabajás dentro de un entorno virtual:
+Para entornos virtuales:
 
 ```bash
-pip -m install pandas
+python -m pip install pandas
 ```
 
 ---
 
 ✨ Contribuciones
 Este proyecto está abierto a mejoras.
-¡Toda sugerencia o pull request será bienvenido para seguir haciendo crecer CodeFinder!
+¡Toda sugerencia o pull request será bienvenida para seguir haciendo crecer CodeFinder!
 
 ---
 
-Espero que este mini proyecto, por más sencillo que sea, pueda ayudar a alguien en algún momento de la vida.  
+🙌 Agradecimientos
+Espero que este mini proyecto, por más sencillo que sea, pueda ayudar a alguien en algún momento de la vida.
 ¡Con eso ya me siento más que realizado! 😄
