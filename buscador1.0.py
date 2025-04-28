@@ -72,6 +72,7 @@ def mostrar_resultados(resultados):
     else:
         print("\n==============================")
         print("🚫 No se encontró ningún código en los archivos Excel.")
+        print("\n==============================")
 
 # Bucle principal
 while True:
@@ -81,20 +82,25 @@ while True:
 
     proveedor = seleccionar_proveedor()
     if proveedor == 'salir':
+        print("\n==============================")
         print("👋 Cerrando el buscador...")
+        print("\n==============================")
         break
     if not proveedor:
         continue
 
     carpeta_busqueda = os.path.join(dropbox_base, proveedor)
     if not os.path.exists(carpeta_busqueda):
+        print("\n==============================")
         print("❌ Carpeta del proveedor no encontrada.")
+        print("\n==============================")
         continue
     
-    print("\n==============================")
     codigos_input = input("🔍 Introducí los códigos separados por comas (o 'salir' para terminar): ").strip()
     if codigos_input.lower() in ['salir', 'q']:
+        print("\n==============================")
         print("👋 Cerrando el buscador...")
+        print("\n==============================")
         break
 
     codigos = [c.strip() for c in codigos_input.split(",")]
