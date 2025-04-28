@@ -1,23 +1,26 @@
-def buscar_codigos_en_archivos(ruta_base, codigos_a_buscar):
+import os
+import pandas as pd
+
+def buscar_codigos_en_archivos(ruta_base, codigos):
     resultados = []
-    
     for carpeta, subcarpetas, archivos in os.walk(ruta_base):
         for archivo in archivos:
-            if archivo.endswith('.xlsx'):
-                ruta_completa = os.path.join(carpeta, archivo)
+            if archivo.endswith(('.xls', '.xlsx')):
+                ruta_archivo = os.path.join(carpeta, archivo)
                 try:
-                    excel_file = pd.ExcelFile(ruta_completa)
-                    for hoja in excel_file.sheet_names:
-                        df = pd.read_excel(ruta_completa, sheet_name=hoja)
-                        for codigo in codigos_a_buscar:
-                            if codigo in df.to_string():
-                                resultados.append({
-                                    'archivo': archivo,
-                                    'hoja': hoja,
-                                    'ruta': ruta_completa,
-                                    'codigo': codigo
-                                })
+                    xls = pd.ExcelFile(ruta_archivo)
+                    for hoja in xls.sheet_names:
+                        df = pd.read_excel(ruta_archivo, sheet_name=hoja, dtype=str)
+                        for codigo in codigos:
+                            if codigo in df.values:
+                                mensaje = (
+                                    f"🔎 Código encontrado: {codigo}\n\n"
+                                    f"📄 Archivo: {archivo}\n"
+                                    f"📄 Hoja: {hoja}\n"
+                                    f"📂 Ruta: {ruta_archivo}\n"
+                                    f"{'─'*40}\n"
+                                )
+                                resultados.append(mensaje)
                 except Exception as e:
-                    print(f"Error leyendo {ruta_completa}: {e}")
-
+                    print(f"Error al procesar el archivo {ruta_archivo}: {e}")
     return resultados

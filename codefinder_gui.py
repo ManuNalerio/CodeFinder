@@ -1,71 +1,135 @@
-# codefinder_gui.py
-
+import os
 import tkinter as tk
-from tkinter import messagebox, filedialog
-from codefinder_base import buscar_codigos_en_archivos  # Importa la función
+from tkinter import ttk, messagebox
+import pandas as pd
+import ttkbootstrap as ttkb
+import time
 
-# Variable global para guardar la ruta seleccionada
-ruta_base = "C:\Users\PC-DEPO\Dropbox\ADMINISTRACION\CONTROL\PENDIENTES"
+# Ruta base de tus carpetas
+ruta_base = r"Tu ruta de acceso a la carpeta contenedora de archivos excel"
 
-def seleccionar_carpeta():
-    global ruta_base
-    carpeta_seleccionada = filedialog.askdirectory()
-    if carpeta_seleccionada:
-        ruta_base = carpeta_seleccionada
-        etiqueta_ruta.config(text=f"Carpeta seleccionada:\n{ruta_base}")
-    else:
-        messagebox.showinfo("Información", "No se seleccionó ninguna carpeta.")
+# Inicializar ventana principal con tema oscuro
+app = ttkb.Window(themename="darkly")
+app.title("CodeFinder GUI")
+app.geometry("800x600")
+app.resizable(False, False)
+
+# Crear estilo
+style = ttkb.Style()
+
+# Variable para proveedor seleccionado
+proveedor_var = tk.StringVar()
+
+# Frame para seleccionar proveedor
+proveedor_frame = ttkb.Frame(app, padding=10)
+proveedor_frame.pack(fill="x")
+
+proveedor_label = ttkb.Label(proveedor_frame, text="Seleccionar proveedor:", font=("Segoe UI", 12))
+proveedor_label.pack(side="left")
+
+# Cargar lista de carpetas (proveedores)
+proveedores = [d for d in os.listdir(ruta_base) if os.path.isdir(os.path.join(ruta_base, d))]
+
+proveedor_dropdown = ttkb.Combobox(proveedor_frame, textvariable=proveedor_var, values=proveedores, width=50, font=("Segoe UI", 11))
+proveedor_dropdown.pack(side="left", padx=10)
+
+# Frame para ingresar códigos
+input_frame = ttkb.Frame(app, padding=10)
+input_frame.pack(fill="x")
+
+entry_label = ttkb.Label(input_frame, text="Ingresar códigos (separados por coma):", font=("Segoe UI", 12))
+entry_label.pack(anchor="w")
+
+entry = ttkb.Entry(input_frame, font=("Segoe UI", 11))
+entry.pack(fill="x", pady=5)
+
+# Frame para botones
+button_frame = ttkb.Frame(app, padding=10)
+button_frame.pack(fill="x")
+
+buscar_button = ttkb.Button(button_frame, text="Buscar Códigos", command=lambda: buscar_codigos())
+buscar_button.pack(side="left", padx=5)
+
+limpiar_button = ttkb.Button(button_frame, text="Limpiar resultados", command=lambda: limpiar_resultados())
+limpiar_button.pack(side="left", padx=5)
+
+cambiar_tema_button = ttkb.Button(button_frame, text="Cambiar Tema", command=lambda: cambiar_tema())
+cambiar_tema_button.pack(side="left", padx=5)
+
+# Barra de progreso
+progreso = ttkb.Progressbar(app, orient="horizontal", length=400, mode="determinate", bootstyle="success-striped")
+progreso.pack(pady=10)
+
+# Área de salida
+output_text = tk.Text(app, height=20, font=("Consolas", 10), wrap="word", borderwidth=2, relief="ridge")
+output_text.pack(padx=10, pady=10, fill="both", expand=True)
+
+# Funciones principales
 
 def buscar_codigos():
-    global ruta_base
+    proveedor = proveedor_var.get()
+    codigos = entry.get().replace(" ", "").split(',')
 
-    if not ruta_base:
-        messagebox.showwarning("Advertencia", "Por favor seleccioná una carpeta primero.")
+    if not proveedor:
+        messagebox.showwarning("Advertencia", "Por favor seleccioná un proveedor.")
         return
 
-    codigos = entrada_codigos.get().split(",")
-    codigos = [codigo.strip() for codigo in codigos if codigo.strip()]
-
-    if not codigos:
+    if not codigos or codigos == ['']:
         messagebox.showwarning("Advertencia", "Por favor ingresá al menos un código.")
         return
 
-    resultados.delete(0, tk.END)  # Limpiar resultados anteriores
+    carpeta_proveedor = os.path.join(ruta_base, proveedor)
 
-    resultados_encontrados = buscar_codigos_en_archivos(ruta_base, codigos)
+    if not os.path.exists(carpeta_proveedor):
+        messagebox.showerror("Error", f"No se encontró la carpeta del proveedor: {proveedor}")
+        return
 
-    if resultados_encontrados:
-        for resultado in resultados_encontrados:
-            resultados.insert(tk.END, f"Código '{resultado['codigo']}' encontrado en archivo {resultado['archivo']} - Hoja {resultado['hoja']}")
-            resultados.insert(tk.END, f"Ruta: {resultado['ruta']}")
-            resultados.insert(tk.END, "----------------------------------------")
+    archivos_excel = [f for f in os.listdir(carpeta_proveedor) if f.endswith((".xls", ".xlsx"))]
+
+    if not archivos_excel:
+        messagebox.showinfo("Información", "No hay archivos Excel para este proveedor.")
+        return
+
+    progreso["maximum"] = len(archivos_excel)
+    progreso["value"] = 0
+    output_text.delete('1.0', tk.END)
+
+    for idx, archivo in enumerate(archivos_excel):
+        ruta_archivo = os.path.join(carpeta_proveedor, archivo)
+        try:
+            xls = pd.ExcelFile(ruta_archivo)
+            for hoja in xls.sheet_names:
+                df = pd.read_excel(ruta_archivo, sheet_name=hoja)
+                for codigo in codigos:
+                    if df.astype(str).apply(lambda x: x.str.contains(codigo, na=False)).any().any():
+                        output_text.insert(tk.END, f"✅ Código '{codigo}' encontrado en:\n")
+                        output_text.insert(tk.END, f"   📄 Archivo: {archivo}\n")
+                        output_text.insert(tk.END, f"   📄 Hoja: {hoja}\n")
+                        output_text.insert(tk.END, f"   📂 Ruta: {ruta_archivo}\n\n")
+        except Exception as e:
+            output_text.insert(tk.END, f"⚠️ Error procesando {archivo}: {str(e)}\n\n")
+        progreso["value"] = idx + 1
+        app.update_idletasks()
+
+    messagebox.showinfo("Búsqueda finalizada", "La búsqueda de códigos finalizó.")
+
+def limpiar_resultados():
+    output_text.delete('1.0', tk.END)
+    progreso["value"] = 0
+    entry.delete(0, tk.END)
+    proveedor_var.set('')
+
+def cambiar_tema():
+    current_theme = style.theme.name
+    # Pequeño "efecto de transición"
+    app.configure(cursor="watch")
+    app.update()
+    time.sleep(0.2)
+    if current_theme == "darkly":
+        style.theme_use("flatly")   # Tema claro
     else:
-        resultados.insert(tk.END, "No se encontraron códigos.")
+        style.theme_use("darkly")   # Tema oscuro
+    app.configure(cursor="")  # Volver al cursor normal
 
-# Crear la ventana principal
-ventana = tk.Tk()
-ventana.title("CodeFinder GUI")
-ventana.geometry("700x500")
-
-# Botón para seleccionar carpeta
-boton_carpeta = tk.Button(ventana, text="Seleccionar Carpeta", command=seleccionar_carpeta)
-boton_carpeta.pack(pady=10)
-
-# Etiqueta para mostrar la ruta
-etiqueta_ruta = tk.Label(ventana, text="No se seleccionó carpeta", wraplength=600, justify="center")
-etiqueta_ruta.pack(pady=5)
-
-# Entrada de códigos
-entrada_codigos = tk.Entry(ventana, width=80)
-entrada_codigos.pack(pady=10)
-
-# Botón para buscar
-boton_buscar = tk.Button(ventana, text="Buscar Códigos", command=buscar_codigos)
-boton_buscar.pack(pady=10)
-
-# Lista para mostrar resultados
-resultados = tk.Listbox(ventana, width=100, height=20)
-resultados.pack(pady=20)
-
-# Iniciar la ventana
-ventana.mainloop()
+# Ejecutar la aplicación
+app.mainloop()
