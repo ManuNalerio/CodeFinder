@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Ruta base donde están todos los proveedores
-dropbox_base = r'Ruta donde se encuentran los proveedores'
+dropbox_base = r'C:\Users\PC-DEPO\Dropbox\ADMINISTRACION\CONTROL\PENDIENTES'
 
 # Extensiones válidas
 extensiones_excel = ['.xlsx', '.xls']
@@ -56,7 +56,9 @@ def buscar_codigos(carpeta_busqueda, codigos):
 
 def mostrar_resultados(resultados):
     if resultados:
+        print("\n==============================")
         print("\n🔎 Resultados encontrados:")
+        print("\n==============================")
         resultados_por_codigo = {}
         for codigo, archivo, hoja, ruta in resultados:
             if codigo not in resultados_por_codigo:
